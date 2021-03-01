@@ -12,7 +12,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<Course> items = new List();
+  TextEditingController teSearch = TextEditingController();
+  List<Map<String, dynamic>> allCourses = [];
+  List<Map<String, dynamic>> items = [];
 
   DbHelper helper;
 
@@ -21,13 +23,35 @@ class _HomeState extends State<Home> {
     helper = DbHelper();
     helper.allCourses().then((courses) {
       setState(() {
-        courses.forEach((course) {
-          items.add(Course.fromMap(course));
-        });
+        allCourses = courses;
+        items = allCourses;
       });
     });
 
     super.initState();
+  }
+
+  void filterSearch(String query) async {
+    // ignore: non_constant_identifier_names
+    List<Map<String, dynamic>> all_courese = allCourses;
+    if (query.isNotEmpty) {
+      List<Map<String, dynamic>> result = [];
+      all_courese.forEach((item) {
+        Course course = Course.fromMap(item);
+        if (course.name.toLowerCase().contains(query.toLowerCase())) {
+          result.add(item);
+        }
+      });
+      setState(() {
+        items = [];
+        items = result;
+      });
+    } else {
+      setState(() {
+        items = [];
+        items = allCourses;
+      });
+    }
   }
 
   @override
@@ -50,10 +74,8 @@ class _HomeState extends State<Home> {
               if (result == 'save') {
                 helper.allCourses().then((courses) {
                   setState(() {
-                    items.clear();
-                    courses.forEach((course) {
-                      items.add(Course.fromMap(course));
-                    });
+                    items = courses;
+
                     showSnackBar("Added Successfuly");
                   });
                 });
@@ -66,85 +88,119 @@ class _HomeState extends State<Home> {
         padding: EdgeInsets.all(16.0),
         child: (items == null)
             ? Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (ctx, index) {
-                  Course course = Course.fromMap(items[index].toMap());
-                  return Card(
-                    margin: EdgeInsets.all(5),
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => CourseDetails(course: course),
+            : Column(
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: Colors.green,
+                        ),
+                        labelText: "Search",
+                        labelStyle: TextStyle(color: Colors.green),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.green, width: 1.0),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.green, width: 1.0),
+                        ),
+                        hintText: "Search"),
+                    controller: teSearch,
+                    onChanged: (val) {
+                      setState(() {
+                        filterSearch(val);
+                      });
+                    },
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: items.length,
+                      itemBuilder: (ctx, index) {
+                        Course course = Course.fromMap(items[index]);
+                        return Card(
+                          margin: EdgeInsets.all(5),
+                          child: ListTile(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (ctx) =>
+                                      CourseDetails(course: course),
+                                ),
+                              );
+                            },
+                            title: Text(
+                                '${course.name} - ${course.hours} Hours  - ${course.level} '),
+                            subtitle: Text(
+                              course.content,
+                              style: TextStyle(fontSize: 10),
+                            ),
+                            trailing: Container(
+                              width: 100,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            helper.deleteCourse(course.id);
+
+                                            helper.allCourses().then((courses) {
+                                              setState(() {
+                                                items = courses;
+                                              });
+
+                                              showSnackBar(
+                                                  "Deleted Successfuly");
+                                            });
+                                          });
+                                        },
+                                      ),
+                                      IconButton(
+                                          icon: Icon(
+                                            Icons.edit,
+                                            color: Colors.black,
+                                          ),
+                                          onPressed: () async {
+                                            String result =
+                                                await Navigator.of(context)
+                                                    .push(
+                                              MaterialPageRoute(
+                                                builder: (ctx) => CourseUpdate(
+                                                    course: course),
+                                              ),
+                                            );
+                                            if (result == 'edit') {
+                                              helper
+                                                  .allCourses()
+                                                  .then((courses) {
+                                                setState(() {
+                                                  items = courses;
+
+                                                  showSnackBar(
+                                                      "Updated Successfuly");
+                                                });
+                                              });
+                                            }
+                                          }),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         );
                       },
-                      title: Text('${course.name} - ${course.hours} Hours  - ${course.level} '),
-                      subtitle: Text(
-                        course.content,
-                        style: TextStyle(fontSize: 10),
-                      ),
-                      trailing: Container(
-                        width: 100,
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      helper.deleteCourse(course.id);
-
-                                      helper.allCourses().then((courses) {
-                                        setState(() {
-                                          items.clear();
-                                          courses.forEach((course) {
-                                            items.add(Course.fromMap(course));
-                                          });
-                                        });
-                                      });
-                                    });
-                                  },
-                                ),
-                                IconButton(
-                                    icon: Icon(
-                                      Icons.edit,
-                                      color: Colors.black,
-                                    ),
-                                    onPressed: () async {
-                                      String result =
-                                          await Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (ctx) =>
-                                              CourseUpdate(course: course),
-                                        ),
-                                      );
-                                      if (result == 'edit') {
-                                        helper.allCourses().then((courses) {
-                                          setState(() {
-                                            items.clear();
-                                            courses.forEach((course) {
-                                              items.add(Course.fromMap(course));
-                                            });
-                                            showSnackBar("Updated Successfuly");
-                                          });
-                                        });
-                                      }
-                                    }),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
       ),
     );
