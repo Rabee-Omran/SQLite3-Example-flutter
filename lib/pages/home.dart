@@ -80,7 +80,7 @@ class _HomeState extends State<Home> {
                           ),
                         );
                       },
-                      title: Text('${course.name} - ${course.hours} Hours'),
+                      title: Text('${course.name} - ${course.hours} Hours  - ${course.level} '),
                       subtitle: Text(
                         course.content,
                         style: TextStyle(fontSize: 10),

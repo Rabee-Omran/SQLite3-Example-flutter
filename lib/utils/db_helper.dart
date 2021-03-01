@@ -11,7 +11,8 @@ class DbHelper {
     } else {
       //define path to database
       String path = join(await getDatabasesPath(), 'school.db');
-      return _db = await openDatabase(path, version: 1, onCreate: onCreate);
+      return _db = await openDatabase(path,
+          version: 2, onCreate: onCreate, onUpgrade: onUpgrade);
     }
   }
 
@@ -25,6 +26,13 @@ class DbHelper {
                hours integer
               )''');
     return _db;
+  }
+
+//execute when i update the version of db
+  onUpgrade(Database db, int old_version, int new_version) async {
+    if (old_version < new_version) {
+      await db.execute("alter table courses add column level varchar(50)");
+    }
   }
 
 //create course

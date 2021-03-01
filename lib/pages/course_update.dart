@@ -14,6 +14,7 @@ class _CourseUpdateState extends State<CourseUpdate> {
   TextEditingController cName = TextEditingController();
   TextEditingController cContent = TextEditingController();
   TextEditingController cHours = TextEditingController();
+  TextEditingController cLevel = TextEditingController();
   DbHelper helper;
 
   @override
@@ -22,7 +23,7 @@ class _CourseUpdateState extends State<CourseUpdate> {
     cName.text = widget.course.name;
     cContent.text = widget.course.content;
     cHours.text = widget.course.hours.toString();
-
+    cLevel.text = widget.course.level;
     super.initState();
   }
 
@@ -87,6 +88,21 @@ class _CourseUpdateState extends State<CourseUpdate> {
                       hintText: "Enter Course Hours"),
                 ),
                 SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  controller: cLevel,
+                  decoration: InputDecoration(
+                      focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Colors.greenAccent, width: 1.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.green, width: 1.0),
+                      ),
+                      hintText: "Enter Course Level"),
+                ),
+                SizedBox(
                   height: 40,
                 ),
                 RaisedButton(
@@ -100,7 +116,8 @@ class _CourseUpdateState extends State<CourseUpdate> {
                       'id': widget.course.id,
                       'name': cName.text,
                       'content': cContent.text,
-                      'hours': int.parse(cHours.text)
+                      'hours': int.parse(cHours.text),
+                      'level': cLevel.text,
                     });
                     await helper.updateCourse(course).then((_) => {
                           Navigator.of(context).pop("edit"),

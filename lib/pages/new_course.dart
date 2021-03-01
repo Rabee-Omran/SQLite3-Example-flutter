@@ -8,7 +8,7 @@ class Newcourse extends StatefulWidget {
 }
 
 class _NewcourseState extends State<Newcourse> {
-  String name, content;
+  String name, content, level;
   int hours;
   DbHelper helper;
 
@@ -92,6 +92,25 @@ class _NewcourseState extends State<Newcourse> {
                   },
                 ),
                 SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(
+                      focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Colors.greenAccent, width: 1.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.green, width: 1.0),
+                      ),
+                      hintText: "Enter Course Level"),
+                  onChanged: (val) {
+                    setState(() {
+                      level = val;
+                    });
+                  },
+                ),
+                SizedBox(
                   height: 40,
                 ),
                 RaisedButton(
@@ -101,8 +120,12 @@ class _NewcourseState extends State<Newcourse> {
                   color: Colors.green,
                   child: Text("Save"),
                   onPressed: () async {
-                    Course course = Course.fromMap(
-                        {'name': name, 'content': content, 'hours': hours});
+                    Course course = Course.fromMap({
+                      'name': name,
+                      'content': content,
+                      'hours': hours,
+                      'level': level
+                    });
                     await helper.createCourse(course).then((_) => {
                           Navigator.of(context).pop("save"),
                           showSnackBar(),
