@@ -37,7 +37,7 @@ class DbHelper {
 //get all courses
   Future<List> allCourses() async {
     Database db = await createDatabase();
-    return db.query(
+    return await db.query(
       'courses',
     );
   }
@@ -46,6 +46,13 @@ class DbHelper {
   Future<int> deleteCourse(int id) async {
     Database db = await createDatabase();
     // return db.delete('courses', where: 'id=? and name = ?', whereArgs: [id,name]);
-    return db.delete('courses', where: 'id=?', whereArgs: [id]);
+    return await db.delete('courses', where: 'id=?', whereArgs: [id]);
+  }
+
+  //update single course
+  Future<int> updateCourse(Course course) async {
+    Database db = await createDatabase();
+    return await db.update('courses', course.toMap(),
+        where: 'id=?', whereArgs: [course.id]);
   }
 }
